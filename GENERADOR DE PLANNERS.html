@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Planner — Agencia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #f1e035;
+    --text: #f0f0f0;
+    --muted: #888;
+    --danger: #ff4f4f;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .nav-tab {
+    padding: 8px 20px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-tab.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .nav-tab:hover:not(.active) { color: var(--text); }
+
+  .client-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .client-selector select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* MAIN LAYOUT */
+  .app {
+    display: flex;
+    height: calc(100vh - 65px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+
+  .sidebar-section {
+    padding: 0 16px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .sidebar-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-top: 12px;
+  }
+
+  .client-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .client-item:hover { background: var(--surface2); }
+  .client-item.active { background: var(--accent); color: #000; }
+
+  .client-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .client-item.active .client-avatar { background: rgba(0,0,0,0.2); color: #000; }
+
+  .client-name { font-size: 13px; font-weight: 500; }
+
+  .btn-new-client {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    transition: all 0.15s;
+  }
+
+  .btn-new-client:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* CONTENT AREA */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+  }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* PAGE TITLE */
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .page-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-grid.single { grid-template-columns: 1fr; }
+  .form-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  /* TAGS */
+  .tag-input-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 44px;
+    cursor: text;
+    transition: border-color 0.2s;
+  }
+
+  .tag-input-wrap:focus-within { border-color: var(--accent); }
+
+  .tag {
+    background: var(--accent);
+    color: #000;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .tag.danger { background: var(--danger); color: #fff; }
+  .tag.neutral { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+  .tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .tag-remove:hover { opacity: 1; }
+
+  .tag-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    min-width: 120px;
+    padding: 2px 4px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover { background: #d9ff40; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* PLANNER GRID */
+  .planner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .month-nav button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .month-nav button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .month-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .week-day-header {
+    background: var(--surface);
+    padding: 10px;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .cal-day {
+    background: var(--surface);
+    padding: 10px;
+    min-height: 100px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .cal-day:hover { background: var(--surface2); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day.today .day-num { color: var(--accent); font-weight: 700; }
+  .cal-day.has-post { border-top: 2px solid var(--accent); }
+
+  .day-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--muted);
+  }
+
+  .day-post-pill {
+    background: var(--accent);
+    color: #000;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .day-post-pill.ig { background: #E1306C; color: #fff; }
+  .day-post-pill.fb { background: #1877F2; color: #fff; }
+
+  /* POST LIST */
+  .post-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .post-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: start;
+    transition: border-color 0.15s;
+  }
+
+  .post-card:hover { border-color: var(--accent); }
+
+  .post-date-badge {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+    min-width: 52px;
+  }
+
+  .post-date-day {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .post-date-month {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .post-body {}
+
+  .post-platform-badges {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .platform-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .platform-badge.ig { background: #E1306C22; color: #E1306C; border: 1px solid #E1306C44; }
+  .platform-badge.fb { background: #1877F222; color: #1877F2; border: 1px solid #1877F244; }
+
+  .format-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent)22;
+    color: var(--accent);
+    border: 1px solid var(--accent)44;
+  }
+
+  .post-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .post-copy {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .post-pillar {
+    font-size: 11px;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .post-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* LOADING */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .loading-overlay.active { display: flex; }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { font-size: 12px; color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+  .empty-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .empty-sub { font-size: 14px; margin-bottom: 24px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    z-index: 9999;
+    transform: translateY(80px);
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast.show { transform: translateY(0); }
+
+  /* TABS within content */
+  .inner-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .inner-tab {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+
+  .inner-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .inner-view { display: none; }
+  .inner-view.active { display: block; }
+
+  /* SELECT MULTIPLE styled */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .checkbox-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .checkbox-pill input { display: none; }
+
+  .checkbox-pill.checked {
+    border-color: var(--accent);
+    background: var(--accent)22;
+    color: var(--accent);
+  }
+
+  /* BRIEF SEASON FORM */
+  .season-form .form-grid { margin-bottom: 16px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .inline-warning {
+    background: #ff4f4f18;
+    border: 1px solid #ff4f4f44;
+    color: #ff8080;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .select-client-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    color: var(--muted);
+    text-align: center;
+    gap: 12px;
+  }
+
+  .select-client-prompt .big-icon { font-size: 56px; }
+
+  .select-client-prompt p {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .select-client-prompt span { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">content<span>OS</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('clients')">Clientes</button>
+    <button class="nav-tab" onclick="switchTab('planner')">Planner</button>
+    <button class="nav-tab" onclick="switchTab('posts')">Publicaciones</button>
+  </div>
+  <div class="client-selector">
+    <span style="font-size:12px;color:var(--muted)">Cliente activo:</span>
+    <select id="globalClientSelect" onchange="selectClientById(this.value)">
+      <option value="">— Seleccionar —</option>
+    </select>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Clientes</div>
+      <div id="clientList"></div>
+      <button class="btn-new-client" onclick="openNewClientModal()">
+        <span>+</span> Nuevo cliente
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- CLIENTS TAB -->
+    <div id="tab-clients" class="view active">
+      <div id="clientsEmptyState" class="empty-state">
+        <div class="empty-icon">🏢</div>
+        <div class="empty-title">Sin clientes aún</div>
+        <div class="empty-sub">Agrega tu primer cliente para comenzar a planear contenido</div>
+        <button class="btn btn-primary" onclick="openNewClientModal()">+ Agregar cliente</button>
+      </div>
+      <div id="clientDetailArea" style="display:none">
+        <div class="page-title" id="clientDetailName"></div>
+        <div class="page-sub" id="clientDetailIndustry"></div>
+
+        <div class="inner-tabs">
+          <button class="inner-tab active" onclick="switchInnerTab('perfil')">Perfil de marca</button>
+          <button class="inner-tab" onclick="switchInnerTab('temporada')">Brief de temporada</button>
+          <button class="inner-tab" onclick="switchInnerTab('formatos')">Formatos ganadores</button>
+        </div>
+
+        <!-- PERFIL -->
+        <div id="inner-perfil" class="inner-view active">
+          <div id="clientProfileView"></div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="openEditClientModal()">✏️ Editar perfil</button>
+            <button class="btn btn-danger" onclick="deleteCurrentClient()">Eliminar cliente</button>
+          </div>
+        </div>
+
+        <!-- TEMPORADA -->
+        <div id="inner-temporada" class="inner-view season-form">
+          <div class="card">
+            <div class="card-title">📅 Brief de temporada</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Mes</label>
+                <select id="seasonMonth">
+                  <option>Enero</option><option>Febrero</option><option>Marzo</option>
+                  <option>Abril</option><option>Mayo</option><option>Junio</option>
+                  <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+                  <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Año</label>
+                <input type="number" id="seasonYear" value="2025" min="2024" max="2030">
+              </div>
+              <div class="form-group full">
+                <label>Objetivo del mes</label>
+                <select id="seasonGoal">
+                  <option>Crecimiento de comunidad</option>
+                  <option>Engagement y conversación</option>
+                  <option>Branding y posicionamiento</option>
+                  <option>Lanzamiento de producto/servicio</option>
+                  <option>Campaña estacional</option>
+                  <option>Reactivación de audiencia</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label>Contexto de temporada (fechas clave, campañas, promociones)</label>
+                <textarea id="seasonContext" placeholder="Ej: Temporada navideña, Black Friday, lanzamiento de nueva sucursal, aniversario de la marca..."></textarea>
+              </div>
+              <div class="form-group full">
+                <label>Temas o ángulos especiales este mes</label>
+                <textarea id="seasonTopics" placeholder="Ej: Enfocarse en testimonios de clientes, destacar proceso de fabricación, contenido behind-the-scenes..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Publicaciones por semana (Instagram)</label>
+                <select id="seasonFreqIG">
+                  <option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Publicaciones por semana (Facebook)</label>
+                <select id="seasonFreqFB">
+                  <option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </select>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="generatePlanner()">✨ Generar planner con IA</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMATOS -->
+        <div id="inner-formatos" class="inner-view">
+          <div id="formatosView"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANNER TAB -->
+    <div id="tab-planner" class="view">
+      <div id="plannerNoClient" class="select-client-prompt">
+        <div class="big-icon">📆</div>
+        <p>Selecciona un cliente</p>
+        <span>Elige un cliente del sidebar para ver o generar su planner</span>
+      </div>
+      <div id="plannerArea" style="display:none">
+        <div class="planner-header">
+          <div>
+            <div class="page-title" id="plannerClientTitle"></div>
+            <div class="page-sub" id="plannerMonthLabel"></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn btn-secondary" onclick="exportPlanner()">📋 Copiar instrucciones</button>
+            <button class="btn btn-primary" onclick="switchTab('clients'); switchInnerTab('temporada')">+ Nuevo planner</button>
+          </div>
+        </div>
+        <div id="plannerCalendar"></div>
+      </div>
+    </div>
+
+    <!-- POSTS TAB -->
+    <div id="tab-posts" class="view">
+      <div id="postsNoClient" class="select-client-prompt">
+        <div class="big-icon">📝</div>
+        <p>Selecciona un cliente</p>
+        <span>Elige un cliente para ver sus publicaciones generadas</span>
+      </div>
+      <div id="postsArea" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+          <div>
+            <div class="page-title">Publicaciones</div>
+            <div class="page-sub" id="postsClientSub"></div>
+          </div>
+        </div>
+        <div class="stats-bar" id="postsStats"></div>
+        <div class="post-list" id="postList"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Generando planner...</div>
+</div>
+
+<!-- MODAL: NEW/EDIT CLIENT -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Nuevo cliente</div>
+    <div class="modal-sub">Define el perfil base de marca. Esta información guiará todo el contenido generado.</div>
+
+    <div class="card">
+      <div class="card-title">🏢 Información básica</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre del cliente / marca</label>
+          <input type="text" id="clientName" placeholder="Ej: Café Origen">
+        </div>
+        <div class="form-group">
+          <label>Industria / giro</label>
+          <input type="text" id="clientIndustry" placeholder="Ej: Restaurante, Moda, Tecnología">
+        </div>
+        <div class="form-group full">
+          <label>Descripción breve de la marca</label>
+          <textarea id="clientDesc" placeholder="¿Qué hace, a quién le vende, cuál es su diferenciador?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Público objetivo</label>
+          <input type="text" id="clientAudience" placeholder="Ej: Mujeres 25-40, profesionistas urbanas">
+        </div>
+        <div class="form-group">
+          <label>Tono de voz</label>
+          <select id="clientTone">
+            <option>Cercano y conversacional</option>
+            <option>Profesional y formal</option>
+            <option>Inspirador y aspiracional</option>
+            <option>Educativo y experto</option>
+            <option>Divertido y desenfadado</option>
+            <option>Minimalista y directo</option>
+            <option>Emotivo y storytelling</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📌 Pilares de contenido</div>
+      <div class="form-group">
+        <label>Agrega los pilares (Enter para confirmar cada uno)</label>
+        <div class="tag-input-wrap" id="pillarWrap" onclick="document.getElementById('pillarInput').focus()">
+          <input class="tag-input" id="pillarInput" placeholder="Ej: Educación, Comunidad, Behind-the-scenes...">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Temas permitidos / que SÍ publicar</div>
+      <div class="form-group">
+        <label>Agrega temas (Enter para confirmar)</label>
+        <div class="tag-input-wrap" id="allowWrap" onclick="document.getElementById('allowInput').focus()">
+          <input class="tag-input" id="allowInput" placeholder="Ej: Proceso artesanal, Valores de marca, Clientes reales...">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚫 Temas restringidos / que NO publicar</div>
+      <div class="form-group">
+        <label>Agrega restricciones (Enter para confirmar)</label>
+        <div class="tag-input-wrap" id="denyWrap" onclick="document.getElementById('denyInput').focus()">
+          <input class="tag-input" id="denyInput" placeholder="Ej: Política, Competidores, Precios exactos...">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 Formatos ganadores</div>
+      <div class="form-group">
+        <label>Selecciona los formatos que mejor funcionan para este cliente</label>
+        <div class="checkbox-group" id="formatCheckboxes">
+          <label class="checkbox-pill"><input type="checkbox" value="Carrusel educativo"> Carrusel educativo</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Reel de tendencia"> Reel de tendencia</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Post de testimonio"> Post de testimonio</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Storytelling narrativo"> Storytelling narrativo</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Behind the scenes"> Behind the scenes</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Tip o consejo rápido"> Tip o consejo rápido</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Pregunta a la comunidad"> Pregunta a la comunidad</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Dato o estadística"> Dato o estadística</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Meme o contenido viral"> Meme o contenido viral</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Post de producto"> Post de producto</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Contenido de valor UGC"> Contenido UGC</label>
+          <label class="checkbox-pill"><input type="checkbox" value="Anuncio o promoción"> Anuncio / promoción</label>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Observaciones sobre formatos (qué genera más engagement)</label>
+        <textarea id="formatNotes" placeholder="Ej: Los carruseles con tips generan más guardados. Los reels de proceso tienen mayor alcance..."></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveClient()">Guardar cliente</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST DETAIL MODAL -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <div class="modal-title" id="postModalTitle"></div>
+    <div class="modal-sub" id="postModalSub"></div>
+    <hr class="divider">
+    <div id="postModalBody"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="document.getElementById('postModal').classList.remove('active')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =================== STATE ===================
+let state = {
+  clients: [],
+  planners: {},
+  activeClientId: null,
+  currentMonth: new Date().getMonth(),
+  currentYear: new Date().getFullYear()
+};
+
+// Tags state
+let tagState = { pillars: [], allow: [], deny: [] };
+let editingClientId = null;
+
+// =================== STORAGE ===================
+function save() {
+  try { localStorage.setItem('contentOS', JSON.stringify(state)); } catch(e) {}
+}
+
+function load() {
+  try {
+    const d = localStorage.getItem('contentOS');
+    if (d) state = JSON.parse(d);
+  } catch(e) {}
+}
+
+// =================== INIT ===================
+load();
+renderSidebar();
+updateGlobalSelect();
+if (state.activeClientId) selectClientById(state.activeClientId);
+
+// =================== TABS ===================
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabs = ['clients','planner','posts'];
+  const idx = tabs.indexOf(tab);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+
+  if (tab === 'planner') renderPlannerTab();
+  if (tab === 'posts') renderPostsTab();
+}
+
+function switchInnerTab(tab) {
+  document.querySelectorAll('.inner-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('inner-' + tab).classList.add('active');
+  const tabs = ['perfil','temporada','formatos'];
+  const idx = tabs.indexOf(tab);
+  document.querySelectorAll('.inner-tab')[idx].classList.add('active');
+}
+
+// =================== SIDEBAR / CLIENTS LIST ===================
+function renderSidebar() {
+  const list = document.getElementById('clientList');
+  list.innerHTML = '';
+  state.clients.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'client-item' + (c.id === state.activeClientId ? ' active' : '');
+    item.onclick = () => selectClientById(c.id);
+    const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    item.innerHTML = `<div class="client-avatar">${initials}</div><div class="client-name">${c.name}</div>`;
+    list.appendChild(item);
+  });
+
+  const empty = document.getElementById('clientsEmptyState');
+  const detail = document.getElementById('clientDetailArea');
+  if (state.clients.length === 0) {
+    empty.style.display = 'block';
+    detail.style.display = 'none';
+  }
+}
+
+function updateGlobalSelect() {
+  const sel = document.getElementById('globalClientSelect');
+  sel.innerHTML = '<option value="">— Seleccionar —</option>';
+  state.clients.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    if (c.id === state.activeClientId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function selectClientById(id) {
+  if (!id) return;
+  state.activeClientId = id;
+  save();
+  renderSidebar();
+  updateGlobalSelect();
+  renderClientDetail();
+}
+
+function renderClientDetail() {
+  const client = getActiveClient();
+  if (!client) return;
+
+  document.getElementById('clientsEmptyState').style.display = 'none';
+  document.getElementById('clientDetailArea').style.display = 'block';
+  document.getElementById('clientDetailName').textContent = client.name;
+  document.getElementById('clientDetailIndustry').textContent = client.industry + ' · ' + client.audience;
+
+  // Profile view
+  document.getElementById('clientProfileView').innerHTML = `
+    <div class="card">
+      <div class="card-title">🏢 Perfil de marca</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Industria</label><div style="color:var(--text);margin-top:4px">${client.industry || '—'}</div></div>
+        <div class="form-group"><label>Tono de voz</label><div style="color:var(--text);margin-top:4px">${client.tone || '—'}</div></div>
+        <div class="form-group full"><label>Descripción</label><div style="color:var(--text);margin-top:4px;line-height:1.5">${client.desc || '—'}</div></div>
+        <div class="form-group full"><label>Público objetivo</label><div style="color:var(--text);margin-top:4px">${client.audience || '—'}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📌 Pilares de contenido</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${(client.pillars||[]).map(p => `<span class="tag">${p}</span>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">✅ Temas permitidos</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${(client.allow||[]).map(p => `<span class="tag">${p}</span>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚫 Restricciones</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${(client.deny||[]).map(p => `<span class="tag danger">${p}</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // Formatos view
+  document.getElementById('formatosView').innerHTML = `
+    <div class="card">
+      <div class="card-title">🏆 Formatos ganadores</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${(client.formats||[]).map(f => `<span class="tag neutral">${f}</span>`).join('')}
+      </div>
+      ${client.formatNotes ? `<div style="color:var(--muted);font-size:13px;line-height:1.5;border-top:1px solid var(--border);padding-top:14px;margin-top:4px">${client.formatNotes}</div>` : ''}
+    </div>
+  `;
+
+  // Set current month in season form
+  const now = new Date();
+  document.getElementById('seasonMonth').selectedIndex = now.getMonth();
+  document.getElementById('seasonYear').value = now.getFullYear();
+}
+
+function getActiveClient() {
+  return state.clients.find(c => c.id === state.activeClientId);
+}
+
+// =================== CLIENT MODAL ===================
+function setupTagInput(inputId, wrapId, arr) {
+  const input = document.getElementById(inputId);
+  const wrap = document.getElementById(wrapId);
+
+  input.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) {
+      e.preventDefault();
+      const val = input.value.trim().replace(/,$/, '');
+      if (val && !arr.includes(val)) {
+        arr.push(val);
+        renderTagsInWrap(wrapId, arr, inputId);
+      }
+      input.value = '';
+    }
+  });
+}
+
+function renderTagsInWrap(wrapId, arr, inputId, danger = false) {
+  const wrap = document.getElementById(wrapId);
+  const input = document.getElementById(inputId);
+  // remove old tags
+  wrap.querySelectorAll('.tag').forEach(t => t.remove());
+  arr.forEach((val, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag' + (danger ? ' danger' : '');
+    tag.innerHTML = `${val}<span class="tag-remove" onclick="removeTag('${wrapId}','${inputId}',${i})">×</span>`;
+    wrap.insertBefore(tag, input);
+  });
+}
+
+function removeTag(wrapId, inputId, idx) {
+  const map = { pillarWrap: tagState.pillars, allowWrap: tagState.allow, denyWrap: tagState.deny };
+  const arr = map[wrapId];
+  arr.splice(idx, 1);
+  const danger = wrapId === 'denyWrap';
+  renderTagsInWrap(wrapId, arr, inputId, danger);
+}
+
+function openNewClientModal() {
+  editingClientId = null;
+  tagState = { pillars: [], allow: [], deny: [] };
+  document.getElementById('modalTitle').textContent = 'Nuevo cliente';
+  clearClientForm();
+  renderTagsInWrap('pillarWrap', tagState.pillars, 'pillarInput');
+  renderTagsInWrap('allowWrap', tagState.allow, 'allowInput');
+  renderTagsInWrap('denyWrap', tagState.deny, 'denyInput', true);
+  document.getElementById('clientModal').classList.add('active');
+  setupAllTagInputs();
+}
+
+function openEditClientModal() {
+  const client = getActiveClient();
+  if (!client) return;
+  editingClientId = client.id;
+  tagState = {
+    pillars: [...(client.pillars || [])],
+    allow: [...(client.allow || [])],
+    deny: [...(client.deny || [])]
+  };
+  document.getElementById('modalTitle').textContent = 'Editar cliente';
+  document.getElementById('clientName').value = client.name || '';
+  document.getElementById('clientIndustry').value = client.industry || '';
+  document.getElementById('clientDesc').value = client.desc || '';
+  document.getElementById('clientAudience').value = client.audience || '';
+  document.getElementById('clientTone').value = client.tone || '';
+  document.getElementById('formatNotes').value = client.formatNotes || '';
+
+  // formats
+  document.querySelectorAll('#formatCheckboxes .checkbox-pill').forEach(pill => {
+    const input = pill.querySelector('input');
+    const checked = (client.formats || []).includes(input.value);
+    if (checked) { pill.classList.add('checked'); input.checked = true; }
+    else { pill.classList.remove('checked'); input.checked = false; }
+  });
+
+  renderTagsInWrap('pillarWrap', tagState.pillars, 'pillarInput');
+  renderTagsInWrap('allowWrap', tagState.allow, 'allowInput');
+  renderTagsInWrap('denyWrap', tagState.deny, 'denyInput', true);
+  document.getElementById('clientModal').classList.add('active');
+  setupAllTagInputs();
+}
+
+function setupAllTagInputs() {
+  setupTagInput('pillarInput', 'pillarWrap', tagState.pillars);
+  setupTagInput('allowInput', 'allowWrap', tagState.allow);
+  setupTagInput('denyInput', 'denyWrap', tagState.deny);
+
+  document.querySelectorAll('#formatCheckboxes .checkbox-pill').forEach(pill => {
+    pill.onclick = () => {
+      const input = pill.querySelector('input');
+      input.checked = !input.checked;
+      pill.classList.toggle('checked', input.checked);
+    };
+  });
+}
+
+function clearClientForm() {
+  ['clientName','clientIndustry','clientDesc','clientAudience','formatNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('clientTone').selectedIndex = 0;
+  document.querySelectorAll('#formatCheckboxes .checkbox-pill').forEach(p => {
+    p.classList.remove('checked');
+    p.querySelector('input').checked = false;
+  });
+}
+
+function saveClient() {
+  const name = document.getElementById('clientName').value.trim();
+  if (!name) { showToast('⚠️ El nombre es obligatorio'); return; }
+
+  const formats = [...document.querySelectorAll('#formatCheckboxes input:checked')].map(i => i.value);
+
+  const data = {
+    name,
+    industry: document.getElementById('clientIndustry').value.trim(),
+    desc: document.getElementById('clientDesc').value.trim(),
+    audience: document.getElementById('clientAudience').value.trim(),
+    tone: document.getElementById('clientTone').value,
+    pillars: [...tagState.pillars],
+    allow: [...tagState.allow],
+    deny: [...tagState.deny],
+    formats,
+    formatNotes: document.getElementById('formatNotes').value.trim()
+  };
+
+  if (editingClientId) {
+    const idx = state.clients.findIndex(c => c.id === editingClientId);
+    if (idx > -1) state.clients[idx] = { ...state.clients[idx], ...data };
+  } else {
+    data.id = 'c_' + Date.now();
+    state.clients.push(data);
+    state.activeClientId = data.id;
+  }
+
+  save();
+  closeModal();
+  renderSidebar();
+  updateGlobalSelect();
+  renderClientDetail();
+  showToast('✅ Cliente guardado');
+}
+
+function deleteCurrentClient() {
+  if (!confirm('¿Eliminar este cliente y su planner? Esta acción no se puede deshacer.')) return;
+  state.clients = state.clients.filter(c => c.id !== state.activeClientId);
+  delete state.planners[state.activeClientId];
+  state.activeClientId = state.clients[0]?.id || null;
+  save();
+  renderSidebar();
+  updateGlobalSelect();
+  if (state.activeClientId) renderClientDetail();
+  else {
+    document.getElementById('clientsEmptyState').style.display = 'block';
+    document.getElementById('clientDetailArea').style.display = 'none';
+  }
+  showToast('🗑️ Cliente eliminado');
+}
+
+function closeModal() {
+  document.getElementById('clientModal').classList.remove('active');
+}
+
+// =================== GENERATE PLANNER ===================
+async function generatePlanner() {
+  const client = getActiveClient();
+  if (!client) { showToast('⚠️ Selecciona un cliente primero'); return; }
+
+  const month = document.getElementById('seasonMonth').value;
+  const year = document.getElementById('seasonYear').value;
+  const goal = document.getElementById('seasonGoal').value;
+  const context = document.getElementById('seasonContext').value.trim();
+  const topics = document.getElementById('seasonTopics').value.trim();
+  const freqIG = document.getElementById('seasonFreqIG').value;
+  const freqFB = document.getElementById('seasonFreqFB').value;
+
+  const loadingMsgs = [
+    'Analizando perfil de marca...',
+    'Estructurando narrativas...',
+    'Distribuyendo formatos ganadores...',
+    'Aplicando contexto de temporada...'
+  ];
+
+  showLoading(loadingMsgs);
+
+  const prompt = `Eres un estratega de contenido experto en social media para agencias. Genera un planner de contenido orgánico mensual para Instagram y Facebook.
+
+PERFIL DEL CLIENTE:
+- Marca: ${client.name}
+- Industria: ${client.industry}
+- Descripción: ${client.desc}
+- Público objetivo: ${client.audience}
+- Tono de voz: ${client.tone}
+- Pilares de contenido: ${(client.pillars||[]).join(', ')}
+- Temas que SÍ publicar: ${(client.allow||[]).join(', ')}
+- Temas PROHIBIDOS: ${(client.deny||[]).join(', ')}
+- Formatos ganadores: ${(client.formats||[]).join(', ')}
+- Notas sobre formatos: ${client.formatNotes || 'N/A'}
+
+BRIEF DE TEMPORADA:
+- Mes: ${month} ${year}
+- Objetivo: ${goal}
+- Contexto/fechas clave: ${context || 'Sin contexto adicional'}
+- Temas especiales: ${topics || 'N/A'}
+- Frecuencia Instagram: ${freqIG} publicaciones por semana
+- Frecuencia Facebook: ${freqFB} publicaciones por semana
+
+INSTRUCCIONES:
+1. Genera publicaciones para 4 semanas del mes.
+2. Cada publicación debe tener: fecha sugerida (día del mes), plataforma, formato, pilar de contenido, título gancho, copy sugerido (máx 3 líneas en tono storytelling), instrucción para el diseñador (qué mostrar visualmente), CTA si aplica.
+3. Prioriza los formatos ganadores del cliente.
+4. Aplica storytelling: conecta emocionalmente antes de informar o vender.
+5. Varía los pilares de contenido a lo largo del mes.
+6. Respeta ESTRICTAMENTE los temas prohibidos.
+7. El contenido debe generar comunidad, no ventas directas.
+
+Responde ÚNICAMENTE con un JSON válido, sin explicaciones, sin backticks, sin texto adicional. Formato exacto:
+{
+  "month": "${month}",
+  "year": "${year}",
+  "goal": "${goal}",
+  "posts": [
+    {
+      "day": 1,
+      "platform": "Instagram",
+      "format": "Carrusel educativo",
+      "pillar": "Educación",
+      "hook": "Título gancho aquí",
+      "copy": "Copy sugerido aquí (2-3 líneas, tono storytelling)",
+      "designInstruction": "Instrucción clara para el diseñador sobre qué mostrar visualmente",
+      "cta": "CTA sugerido o vacío si no aplica"
+    }
+  ]
+}`;
+
+  async function callClaude(userPrompt) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    if (!response.ok) {
+      const e = await response.json().catch(() => ({}));
+      throw new Error(e?.error?.message || 'HTTP ' + response.status);
+    }
+    const data = await response.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const first = raw.indexOf('[');
+    const last = raw.lastIndexOf(']');
+    if (first === -1 || last === -1) throw new Error('Respuesta incompleta');
+    return JSON.parse(raw.slice(first, last + 1));
+  }
+
+  const ctx = [
+    'Marca:' + client.name,
+    'Giro:' + client.industry,
+    'Desc:' + (client.desc||'').slice(0,100),
+    'Publico:' + client.audience,
+    'Tono:' + client.tone,
+    'Pilares:' + (client.pillars||[]).join('|'),
+    'SI:' + (client.allow||[]).join('|'),
+    'NO:' + (client.deny||[]).join('|'),
+    'Formatos:' + (client.formats||[]).join('|'),
+    'Objetivo:' + goal,
+    'Contexto:' + (context||'').slice(0,150),
+    'Temas:' + (topics||'').slice(0,100)
+  ].join(' / ');
+
+  const schema = '{"day":1,"platform":"Instagram","format":"Reel","pillar":"Comunidad","hook":"Gancho corto","copy":"2 lineas storytelling","designInstruction":"que mostrar visualmente","cta":""}';
+
+  function makePrompt(desde, hasta, ig, fb) {
+    return 'Genera ' + ig + ' posts Instagram y ' + fb + ' posts Facebook para dias ' + desde + ' al ' + hasta + ' de ' + month + ' ' + year + '. ' +
+      'Contexto: ' + ctx + '. ' +
+      'Distribuye dias uniformemente. Storytelling. Varia formatos. Respeta restricciones NO. ' +
+      'Responde SOLO array JSON sin texto ni backticks. Schema: ' + schema;
+  }
+
+  const igW = parseInt(freqIG);
+  const fbW = parseInt(freqFB);
+
+
+  try {
+    document.getElementById('loadingText').textContent = 'Generando semanas 1-2...';
+    const posts1 = await callClaude(makePrompt(1, 15, igW * 2, fbW * 2));
+    document.getElementById('loadingText').textContent = 'Generando semanas 3-4...';
+    const posts2 = await callClaude(makePrompt(16, 31, igW * 2, fbW * 2));
+
+    const planner = {
+      month, year, goal,
+      posts: [...posts1, ...posts2]
+    };
+
+    // Store planner
+    if (!state.planners[state.activeClientId]) state.planners[state.activeClientId] = [];
+    // Replace if same month/year
+    const key = `${month}_${year}`;
+    const existing = state.planners[state.activeClientId].findIndex(p => `${p.month}_${p.year}` === key);
+    if (existing > -1) state.planners[state.activeClientId][existing] = planner;
+    else state.planners[state.activeClientId].push(planner);
+
+    state.currentMonth = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].indexOf(month);
+    state.currentYear = parseInt(year);
+
+    save();
+    hideLoading();
+    showToast('✅ Planner generado con éxito');
+    switchTab('planner');
+
+  } catch (err) {
+    hideLoading();
+    const msg = err?.message || JSON.stringify(err) || 'Error desconocido';
+    showToast('❌ ' + msg.slice(0, 100));
+    console.error('PLANNER ERROR:', err);
+    alert('Error detallado: ' + msg);
+  }
+}
+
+// =================== PLANNER TAB ===================
+function renderPlannerTab() {
+  const client = getActiveClient();
+  if (!client) {
+    document.getElementById('plannerNoClient').style.display = 'flex';
+    document.getElementById('plannerArea').style.display = 'none';
+    return;
+  }
+
+  const planners = state.planners[state.activeClientId] || [];
+  if (planners.length === 0) {
+    document.getElementById('plannerNoClient').style.display = 'flex';
+    document.getElementById('plannerNoClient').innerHTML = `
+      <div class="big-icon">📅</div>
+      <p>Sin planner generado</p>
+      <span>Ve a la pestaña Clientes → Brief de temporada para generar uno</span>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="switchTab('clients');switchInnerTab('temporada')">Generar planner</button>
+    `;
+    document.getElementById('plannerArea').style.display = 'none';
+    return;
+  }
+
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const currentMonthName = months[state.currentMonth];
+  const currentYear = state.currentYear;
+
+  // find planner for current month
+  const planner = planners.find(p => p.month === currentMonthName && parseInt(p.year) === currentYear)
+    || planners[planners.length - 1];
+
+  document.getElementById('plannerNoClient').style.display = 'none';
+  document.getElementById('plannerArea').style.display = 'block';
+  document.getElementById('plannerClientTitle').textContent = client.name;
+  document.getElementById('plannerMonthLabel').textContent = `${planner.month} ${planner.year} · ${planner.goal}`;
+
+  // Build calendar
+  renderCalendar(planner);
+}
+
+function renderCalendar(planner) {
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const monthIdx = months.indexOf(planner.month);
+  const year = parseInt(planner.year);
+  const firstDay = new Date(year, monthIdx, 1).getDay();
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+
+  const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = `<div class="week-grid">`;
+  days.forEach(d => { html += `<div class="week-day-header">${d}</div>`; });
+
+  // empty cells before
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div class="cal-day other-month"><div class="day-num">—</div></div>`;
+  }
+
+  const today = new Date();
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const postsToday = (planner.posts || []).filter(p => p.day === d);
+    const isToday = today.getDate() === d && today.getMonth() === monthIdx && today.getFullYear() === year;
+    const hasPosts = postsToday.length > 0;
+
+    html += `<div class="cal-day ${isToday ? 'today' : ''} ${hasPosts ? 'has-post' : ''}">
+      <div class="day-num">${d}</div>`;
+
+    postsToday.forEach((post, i) => {
+      const platClass = post.platform?.toLowerCase().includes('instagram') ? 'ig' : 'fb';
+      html += `<div class="day-post-pill ${platClass}" onclick="openPostDetail(${JSON.stringify(planner).replace(/"/g,"'")}, ${d}, ${i})">${post.format}</div>`;
+    });
+
+    html += `</div>`;
+  }
+
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < remaining; i++) {
+    html += `<div class="cal-day other-month"><div class="day-num">—</div></div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('plannerCalendar').innerHTML = html;
+}
+
+function openPostDetail(plannerStr, day, postIdx) {
+  const posts = plannerStr.posts?.filter(p => p.day === day) || [];
+  const post = posts[postIdx];
+  if (!post) return;
+
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const platClass = post.platform?.toLowerCase().includes('instagram') ? 'ig' : 'fb';
+
+  document.getElementById('postModalTitle').textContent = post.hook;
+  document.getElementById('postModalSub').textContent = `${post.platform} · ${day} de ${plannerStr.month}`;
+  document.getElementById('postModalBody').innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="platform-badge ${platClass}">${post.platform}</span>
+      <span class="format-badge">${post.format}</span>
+      <span style="font-size:11px;color:var(--accent2);align-self:center">Pilar: ${post.pillar}</span>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Copy sugerido</label>
+      <div style="color:var(--text);line-height:1.6;margin-top:6px;font-size:14px">${post.copy}</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Instrucción para diseño</label>
+      <div style="color:var(--text);line-height:1.6;margin-top:6px;padding:12px;background:var(--surface2);border-radius:8px;font-size:13px">${post.designInstruction}</div>
+    </div>
+    ${post.cta ? `<div class="form-group"><label>CTA</label><div style="color:var(--accent);margin-top:6px;font-weight:600">${post.cta}</div></div>` : ''}
+  `;
+  document.getElementById('postModal').classList.add('active');
+}
+
+// =================== POSTS TAB ===================
+function renderPostsTab() {
+  const client = getActiveClient();
+  if (!client) {
+    document.getElementById('postsNoClient').style.display = 'flex';
+    document.getElementById('postsArea').style.display = 'none';
+    return;
+  }
+
+  const planners = state.planners[state.activeClientId] || [];
+  if (planners.length === 0) {
+    document.getElementById('postsNoClient').style.display = 'flex';
+    document.getElementById('postsNoClient').querySelector('p').textContent = 'Sin publicaciones aún';
+    document.getElementById('postsNoClient').querySelector('span').textContent = 'Genera un planner primero';
+    document.getElementById('postsArea').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('postsNoClient').style.display = 'none';
+  document.getElementById('postsArea').style.display = 'block';
+
+  const allPosts = planners.flatMap(p => (p.posts || []).map(post => ({ ...post, month: p.month, year: p.year })));
+
+  document.getElementById('postsClientSub').textContent = `${client.name} · ${allPosts.length} publicaciones totales`;
+
+  const igCount = allPosts.filter(p => p.platform?.toLowerCase().includes('instagram')).length;
+  const fbCount = allPosts.filter(p => p.platform?.toLowerCase().includes('facebook')).length;
+  const pillarsSet = [...new Set(allPosts.map(p => p.pillar).filter(Boolean))];
+
+  document.getElementById('postsStats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${allPosts.length}</div><div class="stat-label">Total publicaciones</div></div>
+    <div class="stat-card"><div class="stat-value">${igCount}</div><div class="stat-label">Instagram</div></div>
+    <div class="stat-card"><div class="stat-value">${fbCount}</div><div class="stat-label">Facebook</div></div>
+    <div class="stat-card"><div class="stat-value">${pillarsSet.length}</div><div class="stat-label">Pilares activos</div></div>
+  `;
+
+  const list = document.getElementById('postList');
+  list.innerHTML = '';
+
+  // sort by day
+  const sorted = [...allPosts].sort((a, b) => a.day - b.day);
+
+  sorted.forEach(post => {
+    const platClass = post.platform?.toLowerCase().includes('instagram') ? 'ig' : 'fb';
+    const card = document.createElement('div');
+    card.className = 'post-card';
+    card.innerHTML = `
+      <div class="post-date-badge">
+        <div class="post-date-day">${post.day}</div>
+        <div class="post-date-month">${post.month?.slice(0,3)}</div>
+      </div>
+      <div class="post-body">
+        <div class="post-platform-badges">
+          <span class="platform-badge ${platClass}">${post.platform}</span>
+          <span class="format-badge">${post.format}</span>
+        </div>
+        <div class="post-title">${post.hook}</div>
+        <div class="post-copy">${post.copy}</div>
+        <div class="post-pillar">📌 ${post.pillar}</div>
+      </div>
+      <div class="post-actions">
+        <button class="icon-btn" title="Ver detalle" onclick='showPostFromList(${JSON.stringify(post)})'>👁</button>
+        <button class="icon-btn" title="Copiar copy" onclick='copyPostCopy(${JSON.stringify(post)})'>📋</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function showPostFromList(post) {
+  document.getElementById('postModalTitle').textContent = post.hook;
+  document.getElementById('postModalSub').textContent = `${post.platform} · ${post.day} de ${post.month}`;
+  const platClass = post.platform?.toLowerCase().includes('instagram') ? 'ig' : 'fb';
+  document.getElementById('postModalBody').innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="platform-badge ${platClass}">${post.platform}</span>
+      <span class="format-badge">${post.format}</span>
+      <span style="font-size:11px;color:var(--accent2);align-self:center">Pilar: ${post.pillar}</span>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Copy sugerido</label>
+      <div style="color:var(--text);line-height:1.6;margin-top:6px;font-size:14px">${post.copy}</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Instrucción para diseño</label>
+      <div style="color:var(--text);line-height:1.6;margin-top:6px;padding:12px;background:var(--surface2);border-radius:8px;font-size:13px">${post.designInstruction}</div>
+    </div>
+    ${post.cta ? `<div class="form-group"><label>CTA</label><div style="color:var(--accent);margin-top:6px;font-weight:600">${post.cta}</div></div>` : ''}
+  `;
+  document.getElementById('postModal').classList.add('active');
+}
+
+function copyPostCopy(post) {
+  const text = `${post.hook}\n\n${post.copy}${post.cta ? '\n\n' + post.cta : ''}`;
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Copy copiado'));
+}
+
+function exportPlanner() {
+  const client = getActiveClient();
+  const planners = state.planners[state.activeClientId] || [];
+  if (!planners.length) return;
+
+  const planner = planners[planners.length - 1];
+  let text = `PLANNER DE CONTENIDO — ${client.name}\n${planner.month} ${planner.year} · ${planner.goal}\n\n`;
+
+  (planner.posts || []).sort((a,b) => a.day - b.day).forEach(post => {
+    text += `━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `DÍA ${post.day} | ${post.platform} | ${post.format}\n`;
+    text += `Pilar: ${post.pillar}\n`;
+    text += `GANCHO: ${post.hook}\n`;
+    text += `COPY: ${post.copy}\n`;
+    text += `DISEÑO: ${post.designInstruction}\n`;
+    if (post.cta) text += `CTA: ${post.cta}\n`;
+    text += `\n`;
+  });
+
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Planner copiado al portapapeles'));
+}
+
+// =================== UTILS ===================
+function showLoading(msgs) {
+  const overlay = document.getElementById('loadingOverlay');
+  const textEl = document.getElementById('loadingText');
+  overlay.classList.add('active');
+  let i = 0;
+  textEl.textContent = msgs[0];
+  overlay._interval = setInterval(() => {
+    i = (i + 1) % msgs.length;
+    textEl.textContent = msgs[i];
+  }, 1800);
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.remove('active');
+  clearInterval(overlay._interval);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Close modal on overlay click
+document.getElementById('clientModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('clientModal')) closeModal();
+});
+document.getElementById('postModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('postModal')) document.getElementById('postModal').classList.remove('active');
+});
+</script>
+</body>
+</html>
